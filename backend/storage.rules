@@ -2,6 +2,50 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    //TODO: WRITE ANY NECESSARY STORAGE RULES HERE
+
+    // ============================
+    // Helper Functions
+    // ============================
+
+    function isAuthenticated() {
+      return request.auth != null;
     }
+
+    function isRegisteredUser() {
+      return isAuthenticated()
+          && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isValidImage() {
+      return request.resource.size < 10 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*');
+    }
+
+    // ============================
+    // Article Thumbnails
+    // ============================
+    match /media/articles/{fileName} {
+
+      // Any authenticated user can view article thumbnails
+      allow read: if isAuthenticated();
+
+      // Only registered users can upload thumbnails
+      allow create: if isRegisteredUser()
+                    && isValidImage();
+
+      // Only registered users can overwrite thumbnails
+      allow update: if isRegisteredUser()
+                    && isValidImage();
+
+      // Only registered users can delete thumbnails
+      allow delete: if isRegisteredUser();
+    }
+
+    // ============================
+    // Default: Deny all other paths
+    // ============================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
 }
