@@ -2,6 +2,127 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TODO: WRITE ANY NECESSARY FIRESTORE RULES HERE
+
+    // ============================
+    // Helper Functions
+    // ============================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isRegisteredUser() {
+      return isAuthenticated()
+          && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated()
+          && request.auth.uid == userId;
+    }
+
+    function isNonEmptyString(field) {
+      return field is string && field.size() > 0;
+    }
+
+    // ============================
+    // Users Collection
+    // ============================
+    match /users/{userId} {
+
+      function hasValidUserFields(data) {
+        return data.keys().hasAll(['displayName', 'email', 'createdAt'])
+            && isNonEmptyString(data.displayName)
+            && isNonEmptyString(data.email)
+            && data.createdAt is timestamp;
+      }
+
+      // Any authenticated user can read user profiles
+      allow read: if isAuthenticated();
+
+      // Only the owner can create their own profile
+      allow create: if isOwner(userId)
+                    && hasValidUserFields(request.resource.data);
+
+      // Only the owner can update their own profile
+      allow update: if isOwner(userId)
+                    && hasValidUserFields(request.resource.data);
+
+      // Only the owner can delete their own profile
+      allow delete: if isOwner(userId);
+    }
+
+    // ============================
+    // Articles Collection
+    // ============================
+    match /articles/{articleId} {
+
+      function hasRequiredArticleFields(data) {
+        return data.keys().hasAll([
+          'title',
+          'description',
+          'content',
+          'author',
+          'authorId',
+          'thumbnailURL',
+          'publishedAt',
+          'createdAt'
+        ]);
+      }
+
+      function hasValidArticleTypes(data) {
+        return isNonEmptyString(data.title)
+            && isNonEmptyString(data.description)
+            && isNonEmptyString(data.content)
+            && isNonEmptyString(data.author)
+            && isNonEmptyString(data.authorId)
+            && isNonEmptyString(data.thumbnailURL)
+            && isNonEmptyString(data.publishedAt)
+            && data.createdAt is timestamp;
+      }
+
+      function hasValidThumbnailURL(data) {
+        return data.thumbnailURL.matches('.*media%2Farticles%2F.*')
+            || data.thumbnailURL.matches('.*media/articles/.*');
+      }
+
+      function isArticleAuthor() {
+        return isAuthenticated()
+            && resource.data.authorId == request.auth.uid;
+      }
+
+      function authorIdMatchesAuth(data) {
+        return data.authorId == request.auth.uid;
+      }
+
+      function isValidArticle(data) {
+        return hasRequiredArticleFields(data)
+            && hasValidArticleTypes(data)
+            && hasValidThumbnailURL(data);
+      }
+
+      // Anyone authenticated (including guests) can read articles
+      allow read: if isAuthenticated();
+
+      // Only registered users can create articles, and authorId must match their UID
+      allow create: if isRegisteredUser()
+                    && isValidArticle(request.resource.data)
+                    && authorIdMatchesAuth(request.resource.data);
+
+      // Only the article author can update, and authorId cannot be changed
+      allow update: if isArticleAuthor()
+                    && isValidArticle(request.resource.data)
+                    && authorIdMatchesAuth(request.resource.data);
+
+      // Only the article author can delete
+      allow delete: if isArticleAuthor();
+    }
+
+    // ============================
+    // Default: Deny all other collections
+    // ============================
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
