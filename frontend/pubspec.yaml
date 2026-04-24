@@ -47,6 +47,12 @@ dependencies:
   #chached image
   cached_network_image: ^3.2.0
 
+  #image picker
+  image_picker: ^1.0.7
+
+  #markdown
+  flutter_markdown: ^0.6.18
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
