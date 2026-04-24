@@ -1,16 +1,14 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:news_app_clean_architecture/core/constants/colors.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/params/create_article_params.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_cubit.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
-import 'package:news_app_clean_architecture/features/firebase_articles/presentation/widgets/markdown_toolbar.dart';
 
 class AddArticleScreen extends StatefulWidget {
   const AddArticleScreen({super.key});
@@ -20,19 +18,21 @@ class AddArticleScreen extends StatefulWidget {
 }
 
 class _AddArticleScreenState extends State<AddArticleScreen> {
-  final _descriptionController = TextEditingController();
+  final _aiPromptController = TextEditingController();
   final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
   final _contentController = TextEditingController();
   final _imagePicker = ImagePicker();
 
   File? _thumbnailFile;
-  bool _showPreview = false;
+  final bool _isGenerating = false;
 
   @override
   void dispose() {
+    _aiPromptController.dispose();
     _titleController.dispose();
-    _contentController.dispose();
     _descriptionController.dispose();
+    _contentController.dispose();
     super.dispose();
   }
 
@@ -43,7 +43,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
         if (state is FirebaseArticleCreated) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              backgroundColor: Colors.black,
+              backgroundColor: AppColors.success,
               content: Text('Article published successfully!'),
             ),
           );
@@ -52,40 +52,41 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
         if (state is FirebaseArticlesError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              backgroundColor: Colors.red[700],
+              backgroundColor: AppColors.error,
               content: Text(state.message),
             ),
           );
         }
       },
-      child: Scaffold(
-        appBar: _buildAppBar(),
-        body: _showPreview ? _buildPreview() : _buildEditor(),
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: _buildAppBar(),
+          body: _buildBody(),
+        ),
       ),
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
+      backgroundColor: AppColors.surface,
+      elevation: 0,
       leading: GestureDetector(
         onTap: () => Navigator.pop(context),
-        child: const Icon(Ionicons.chevron_back, color: Colors.black),
+        child: const Icon(Ionicons.close, color: AppColors.textPrimary),
       ),
-      title: Text(
-        _showPreview ? 'Preview' : 'New Article',
-        style: const TextStyle(color: Colors.black),
+      centerTitle: true,
+      title: const Text(
+        'New Article',
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       actions: [
-        GestureDetector(
-          onTap: () => setState(() => _showPreview = !_showPreview),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Icon(
-              _showPreview ? Ionicons.create_outline : Ionicons.eye_outline,
-              color: Colors.black,
-            ),
-          ),
-        ),
         _buildPublishButton(),
       ],
     );
@@ -102,7 +103,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
             margin: const EdgeInsets.only(right: 14, top: 10, bottom: 10),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.black,
+              color: AppColors.primary,
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
@@ -129,24 +130,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
     );
   }
 
-  Widget _buildDescriptionField() {
-    return TextField(
-      controller: _descriptionController,
-      style: TextStyle(
-        fontSize: 16,
-        color: Colors.grey[700],
-      ),
-      maxLines: null,
-      decoration: InputDecoration(
-        hintText: 'Write a short description...',
-        border: InputBorder.none,
-        contentPadding: EdgeInsets.zero,
-        hintStyle: TextStyle(color: Colors.grey[400]),
-      ),
-    );
-  }
-
-  Widget _buildEditor() {
+  Widget _buildBody() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -154,18 +138,14 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
         children: [
           _buildThumbnailPicker(),
           const SizedBox(height: 20),
+          _buildAIAssistantCard(),
+          const SizedBox(height: 24),
           _buildTitleField(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _buildDescriptionField(),
-          const SizedBox(height: 16),
-          _buildContentLabel(),
-          const SizedBox(height: 8),
-          MarkdownToolbar(
-            controller: _contentController,
-            onImageTap: _pickThumbnail,
-          ),
-          const SizedBox(height: 8),
-          _buildContentField(),
+          const SizedBox(height: 24),
+          _buildContentSection(),
+          const SizedBox(height: 60),
         ],
       ),
     );
@@ -176,10 +156,19 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
       onTap: _pickThumbnail,
       child: Container(
         width: double.infinity,
-        height: 200,
+        height: 180,
         decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          gradient: _thumbnailFile == null
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.secondary,
+                    AppColors.primary,
+                  ],
+                )
+              : null,
           image: _thumbnailFile != null
               ? DecorationImage(
                   image: FileImage(_thumbnailFile!),
@@ -191,22 +180,163 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Ionicons.image_outline,
-                    size: 40,
-                    color: Colors.grey[400],
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Ionicons.camera_outline,
+                      size: 28,
+                      color: Colors.white,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     'Tap to add cover image',
                     style: TextStyle(
-                      color: Colors.grey[500],
+                      color: Colors.white.withOpacity(0.9),
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               )
-            : null,
+            : Align(
+                alignment: Alignment.topRight,
+                child: GestureDetector(
+                  onTap: _pickThumbnail,
+                  child: Container(
+                    margin: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.4),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Ionicons.pencil,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildAIAssistantCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.secondary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withOpacity(0.12),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Ionicons.sparkles, size: 18, color: AppColors.primary),
+              SizedBox(width: 8),
+              Text(
+                'AI Assistant',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Write a short description or key points',
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.captionText,
+            ),
+          ),
+          const SizedBox(height: 10),
+          _buildAIPromptField(),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isGenerating ? null : _handleGenerateWithAI,
+              icon: _isGenerating
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Ionicons.sparkles, size: 16),
+              label: Text(
+                _isGenerating ? 'Generating...' : 'Generate with AI',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                disabledForegroundColor: Colors.white70,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAIPromptField() {
+    return TextField(
+      controller: _aiPromptController,
+      style: const TextStyle(
+        fontSize: 14,
+        color: AppColors.textPrimary,
+        height: 1.5,
+      ),
+      maxLines: null,
+      minLines: 3,
+      decoration: InputDecoration(
+        hintText:
+            'E.g. The city\'s new tech park will open its doors in October with 50 new startups...',
+        hintStyle: const TextStyle(
+          color: AppColors.textTertiary,
+          fontSize: 13,
+          height: 1.5,
+        ),
+        filled: true,
+        fillColor: AppColors.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.divider),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.divider),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary),
+        ),
+        contentPadding: const EdgeInsets.all(14),
       ),
     );
   }
@@ -214,109 +344,87 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
   Widget _buildTitleField() {
     return TextField(
       controller: _titleController,
+      maxLines: null,
       style: const TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.w900,
+        color: AppColors.titleDark,
         fontFamily: 'Butler',
       ),
-      maxLines: null,
       decoration: const InputDecoration(
         hintText: 'Article title...',
         border: InputBorder.none,
         contentPadding: EdgeInsets.zero,
+        hintStyle: TextStyle(color: AppColors.textTertiary),
       ),
     );
   }
 
-  Widget _buildContentLabel() {
-    return Text(
-      'Content',
-      style: TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey[600],
-        letterSpacing: 0.5,
-      ),
-    );
-  }
-
-  Widget _buildContentField() {
+  Widget _buildDescriptionField() {
     return TextField(
-      controller: _contentController,
+      controller: _descriptionController,
+      style: TextStyle(
+        fontSize: 16,
+        color: AppColors.captionText,
+      ),
       maxLines: null,
-      minLines: 12,
-      style: const TextStyle(fontSize: 15, height: 1.6),
-      decoration: InputDecoration(
-        hintText: 'Write your article using markdown...\n\n'
-            '## Use headings\n'
-            '**Bold text** for emphasis\n'
-            '- Bullet points for lists',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.black),
-        ),
-        contentPadding: const EdgeInsets.all(16),
+      decoration: const InputDecoration(
+        hintText: 'Write a short description...',
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.zero,
+        hintStyle: TextStyle(color: AppColors.textTertiary),
       ),
     );
   }
 
-  Widget _buildPreview() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_thumbnailFile != null)
-            ClipRRect(
+  Widget _buildContentSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Content',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.captionText,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _contentController,
+          maxLines: null,
+          minLines: 8,
+          style: const TextStyle(
+            fontSize: 15,
+            height: 1.6,
+            color: AppColors.textPrimary,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Write your article content...',
+            hintStyle: const TextStyle(
+              color: AppColors.textTertiary,
+              fontSize: 14,
+              height: 1.6,
+            ),
+            filled: true,
+            fillColor: AppColors.surface,
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              child: Image.file(
-                _thumbnailFile!,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-              ),
+              borderSide: const BorderSide(color: AppColors.divider),
             ),
-          if (_thumbnailFile != null) const SizedBox(height: 16),
-          Text(
-            _titleController.text.isEmpty ? 'Untitled' : _titleController.text,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'Butler',
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.divider),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _descriptionController.text.isEmpty
-                ? 'No description'
-                : _descriptionController.text,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 16),
-          MarkdownBody(
-            data: _contentController.text.isEmpty
-                ? '_No content yet_'
-                : _contentController.text,
-            styleSheet: MarkdownStyleSheet(
-              h2: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
-              p: const TextStyle(fontSize: 15, height: 1.6),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary),
             ),
+            contentPadding: const EdgeInsets.all(16),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -333,6 +441,22 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
     }
   }
 
+  void _handleGenerateWithAI() {
+    final prompt = _aiPromptController.text.trim();
+
+    if (prompt.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.primary,
+          content: Text('Write a prompt or key points first'),
+        ),
+      );
+      return;
+    }
+
+    print('AI Generate tapped with prompt: $prompt');
+  }
+
   void _handlePublish() {
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();
@@ -341,7 +465,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
     if (title.isEmpty || description.isEmpty || content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          backgroundColor: Colors.black,
+          backgroundColor: AppColors.primary,
           content: Text('Please fill in title, description and content'),
         ),
       );
@@ -351,7 +475,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
     if (_thumbnailFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          backgroundColor: Colors.black,
+          backgroundColor: AppColors.primary,
           content: Text('Please add a cover image'),
         ),
       );
