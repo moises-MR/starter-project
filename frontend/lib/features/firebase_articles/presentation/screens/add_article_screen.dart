@@ -183,7 +183,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -196,7 +196,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
                   Text(
                     'Tap to add cover image',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -211,7 +211,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
                     margin: const EdgeInsets.all(10),
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.black.withValues(alpha: 0.4),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
