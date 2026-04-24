@@ -81,9 +81,14 @@ class ArticleDetailsView extends HookWidget {
                 text: article?.author ?? 'AU',
               ),
               const SizedBox(width: 10),
-              Text(
-                article!.author ?? 'Unknown Author',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  article!.author ?? 'Unknown Author',
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const Spacer(),
               Text(
