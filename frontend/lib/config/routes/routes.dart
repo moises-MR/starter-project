@@ -3,10 +3,10 @@ import 'package:news_app_clean_architecture/shared/article/domain/entities/artic
 import 'package:news_app_clean_architecture/features/daily_news/presentation/pages/home/daily_news.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/pages/article_detail/article_detail.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/pages/saved_article/saved_article.dart';
-import 'package:news_app_clean_architecture/features/auth/presentation/screens/welcome_screen.dart';
-import 'package:news_app_clean_architecture/features/auth/presentation/screens/sign_in_screen.dart';
-import 'package:news_app_clean_architecture/features/auth/presentation/screens/sign_up_screen.dart';
-import 'package:news_app_clean_architecture/features/firebase_articles/presentation/screens/add_article_screen.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/pages/welcome/welcome.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/pages/sign_in/sign_in.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/pages/sign_up/sign_up.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/presentation/pages/add_article/add_article.dart';
 
 class AppRoutes {
   static Route onGenerateRoutes(RouteSettings settings) {
@@ -23,16 +23,16 @@ class AppRoutes {
         return _materialRoute(const SavedArticles());
 
       case '/Welcome':
-        return _materialRoute(const WelcomeScreen());
+        return _materialRoute(const WelcomePage());
 
       case '/SignIn':
-        return _materialRoute(const SignInScreen());
+        return _materialRoute(const SignInPage());
 
       case '/SignUp':
-        return _materialRoute(const SignUpScreen());
+        return _materialRoute(const SignUpPage());
 
       case '/AddArticle':
-        return _materialRoute(const AddArticleScreen());
+        return _materialRoute(const AddArticlePage());
 
       default:
         return _materialRoute(const DailyNews());

@@ -11,14 +11,14 @@ import 'package:news_app_clean_architecture/features/firebase_articles/presentat
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/widgets/markdown_toolbar.dart';
 
-class AddArticleScreen extends StatefulWidget {
-  const AddArticleScreen({super.key});
+class AddArticlePage extends StatefulWidget {
+  const AddArticlePage({super.key});
 
   @override
-  State<AddArticleScreen> createState() => _AddArticleScreenState();
+  State<AddArticlePage> createState() => _AddArticlePageState();
 }
 
-class _AddArticleScreenState extends State<AddArticleScreen> {
+class _AddArticlePageState extends State<AddArticlePage> {
   final _aiPromptController = TextEditingController();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();

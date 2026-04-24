@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:news_app_clean_architecture/config/routes/routes.dart';
 import 'package:news_app_clean_architecture/config/theme/app_themes.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_state.dart';
-import 'package:news_app_clean_architecture/features/auth/presentation/screens/welcome_screen.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/pages/welcome/welcome.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_cubit.dart';
@@ -66,7 +66,7 @@ class _AppEntry extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        return const WelcomeScreen();
+        return const WelcomePage();
       },
     );
   }
