@@ -5,7 +5,10 @@ import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_cubit.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
+import 'package:news_app_clean_architecture/injection_container.dart';
 import '../../widgets/article_tile.dart';
 
 class DailyNews extends StatelessWidget {
@@ -13,10 +16,27 @@ class DailyNews extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _buildPage();
+    return BlocProvider(
+      create: (_) => sl<FirebaseArticlesCubit>()..getArticles(),
+      child: _DailyNewsView(),
+    );
+  }
+}
+
+class _DailyNewsView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _buildAppbar(context),
+      body: _buildBody(context),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _onAddArticleTapped(context),
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 
-  _buildAppbar(BuildContext context) {
+  PreferredSizeWidget _buildAppbar(BuildContext context) {
     return AppBar(
       title: const Text(
         'Daily News',
@@ -24,14 +44,14 @@ class DailyNews extends StatelessWidget {
       ),
       actions: [
         GestureDetector(
-          onTap: () => _onShowSavedArticlesViewTapped(context),
+          onTap: () => Navigator.pushNamed(context, '/SavedArticles'),
           child: const Padding(
             padding: EdgeInsets.symmetric(horizontal: 14),
             child: Icon(Icons.bookmark, color: Colors.black),
           ),
         ),
         GestureDetector(
-          onTap: () => _onSignOutTapped(context),
+          onTap: () => context.read<AuthCubit>().signOut(),
           child: const Padding(
             padding: EdgeInsets.symmetric(horizontal: 14),
             child: Icon(Icons.logout, color: Colors.black),
@@ -41,59 +61,60 @@ class DailyNews extends StatelessWidget {
     );
   }
 
-  _buildPage() {
+  Widget _buildBody(BuildContext context) {
     return BlocBuilder<RemoteArticlesBloc, RemoteArticlesState>(
-      builder: (context, state) {
-        if (state is RemoteArticlesLoading) {
-          return Scaffold(
-            appBar: _buildAppbar(context),
-            body: const Center(child: CupertinoActivityIndicator()),
-          );
-        }
-        if (state is RemoteArticlesError) {
-          return Scaffold(
-            appBar: _buildAppbar(context),
-            body: const Center(child: Icon(Icons.refresh)),
-          );
-        }
-        if (state is RemoteArticlesDone) {
-          return _buildArticlesPage(context, state.articles!);
-        }
-        return const SizedBox();
+      builder: (context, remoteState) {
+        return BlocBuilder<FirebaseArticlesCubit, FirebaseArticlesState>(
+          builder: (context, firebaseState) {
+            final List<ArticleEntity> allArticles = [];
+
+            // Add Firebase articles first (newest)
+            if (firebaseState is FirebaseArticlesDone) {
+              allArticles.addAll(firebaseState.articles);
+            }
+
+            // Add API articles
+            if (remoteState is RemoteArticlesDone) {
+              allArticles.addAll(remoteState.articles!);
+            }
+
+            // Both loading
+            if (remoteState is RemoteArticlesLoading &&
+                firebaseState is FirebaseArticlesLoading) {
+              return const Center(child: CupertinoActivityIndicator());
+            }
+
+            // Both failed and no articles
+            if (allArticles.isEmpty) {
+              if (remoteState is RemoteArticlesError ||
+                  firebaseState is FirebaseArticlesError) {
+                return const Center(child: Icon(Icons.refresh));
+              }
+              return const Center(child: CupertinoActivityIndicator());
+            }
+
+            return _buildArticlesList(context, allArticles);
+          },
+        );
       },
     );
   }
 
-  Widget _buildArticlesPage(
+  Widget _buildArticlesList(
     BuildContext context,
     List<ArticleEntity> articles,
   ) {
-    List<Widget> articleWidgets = [];
-    for (var article in articles) {
-      articleWidgets.add(ArticleWidget(
-        article: article,
-        onArticlePressed: (article) => _onArticlePressed(context, article),
-      ));
-    }
-
-    return Scaffold(
-      appBar: _buildAppbar(context),
-      body: ListView(
-        children: articleWidgets,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _onAddArticleTapped(context),
-        child: const Icon(Icons.add),
-      ),
+    return ListView.builder(
+      itemCount: articles.length,
+      itemBuilder: (context, index) {
+        return ArticleWidget(
+          article: articles[index],
+          onArticlePressed: (article) => Navigator.pushNamed(
+              context, '/ArticleDetails',
+              arguments: article),
+        );
+      },
     );
-  }
-
-  void _onArticlePressed(BuildContext context, ArticleEntity article) {
-    Navigator.pushNamed(context, '/ArticleDetails', arguments: article);
-  }
-
-  void _onShowSavedArticlesViewTapped(BuildContext context) {
-    Navigator.pushNamed(context, '/SavedArticles');
   }
 
   void _onAddArticleTapped(BuildContext context) {
@@ -114,9 +135,5 @@ class DailyNews extends StatelessWidget {
         ),
       );
     }
-  }
-
-  void _onSignOutTapped(BuildContext context) {
-    context.read<AuthCubit>().signOut();
   }
 }
