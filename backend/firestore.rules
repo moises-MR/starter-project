@@ -3,51 +3,66 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ============ HELPER FUNCTIONS ============
-
-    function isSignedIn() {
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isOwner(uid) {
-      return isSignedIn() && request.auth.uid == uid;
+    function isRegisteredUser() {
+      return isAuthenticated()
+          && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
-    function incomingData() {
-      return request.resource.data;
+    function isOwner(userId) {
+      return isAuthenticated()
+          && request.auth.uid == userId;
     }
 
-    function existingData() {
-      return resource.data;
+    function isNonEmptyString(field) {
+      return field is string && field.size() > 0;
     }
 
-    function isValidString(field, maxLen) {
-      return field is string && field.size() > 0 && field.size() <= maxLen;
+    // ============================
+    // Users Collection
+    // ============================
+    match /users/{userId} {
+
+      allow read: if isAuthenticated();
+
+      allow create: if isOwner(userId)
+                    && isNonEmptyString(request.resource.data.displayName)
+                    && isNonEmptyString(request.resource.data.email)
+                    && request.resource.data.createdAt is timestamp;
+
+      allow update: if isOwner(userId);
+
+      allow delete: if isOwner(userId);
     }
 
-    // ============ ARTICLES ============
-
+    // ============================
+    // Articles Collection
+    // ============================
     match /articles/{articleId} {
 
-      // Anyone can read published articles
-      allow read: if true;
+      allow read: if isAuthenticated();
 
-      // Only authenticated users can create articles
-      allow create: if isSignedIn()
-                    && incomingData().authorUid == request.auth.uid
-                    && isValidString(incomingData().title, 200)
-                    && isValidString(incomingData().description, 500)
-                    && isValidString(incomingData().content, 50000)
-                    && isValidString(incomingData().author, 100)
-                    && incomingData().urlToImage is string;
+      allow create: if isRegisteredUser()
+                    && isNonEmptyString(request.resource.data.title)
+                    && isNonEmptyString(request.resource.data.content)
+                    && isNonEmptyString(request.resource.data.author)
+                    && request.resource.data.authorId == request.auth.uid;
 
-      // Only the author can update their own articles
-      allow update: if isOwner(existingData().authorUid)
-                    && incomingData().authorUid == existingData().authorUid
-                    && incomingData().createdAt == existingData().createdAt;
+      allow update: if isAuthenticated()
+                    && resource.data.authorId == request.auth.uid;
 
-      // Only the author can delete their own articles
-      allow delete: if isOwner(existingData().authorUid);
+      allow delete: if isAuthenticated()
+                    && resource.data.authorId == request.auth.uid;
+    }
+
+    // ============================
+    // Default: Deny all
+    // ============================
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
