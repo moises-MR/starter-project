@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:news_app_clean_architecture/core/constants/colors.dart';
+import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
 import 'package:news_app_clean_architecture/core/utils/date_formatter.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 
@@ -23,7 +24,7 @@ class FeaturedArticleCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
         ),
         child: Column(
           children: [
@@ -36,20 +37,21 @@ class FeaturedArticleCard extends StatelessWidget {
   }
 
   Widget _buildImage() {
+    final double imageHeight = 300;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(40),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
       child: CachedNetworkImage(
         imageUrl: article.urlToImage ?? '',
-        height: 300,
+        height: imageHeight,
         width: double.infinity,
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
-          height: 300,
+          height: imageHeight,
           color: AppColors.inputFill,
           child: const Center(child: CupertinoActivityIndicator()),
         ),
         errorWidget: (context, url, error) => Container(
-          height: 300,
+          height: imageHeight,
           color: AppColors.inputFill,
           child: const Icon(Icons.error),
         ),

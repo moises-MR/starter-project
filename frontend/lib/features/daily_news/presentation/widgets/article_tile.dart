@@ -119,20 +119,57 @@ class ArticleWidget extends StatelessWidget {
             // Datetime
             Row(
               children: [
-                const Icon(Icons.calendar_month, size: 16),
-                const SizedBox(width: 4),
+                // const Icon(Icons.calendar_month, size: 16),
+                // const SizedBox(width: 8),
+                // Text(
+                //   DateFormatter.format(
+                //     article!.publishedAt!,
+                //   ),
+                //   maxLines: 1,
+                //   overflow: TextOverflow.ellipsis,
+                //   style: const TextStyle(
+                //     fontSize: 12,
+                //   ),
+                // ),
+
                 Expanded(
-                  child: Text(
-                    DateFormatter.format(
-                      article!.publishedAt!,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                    ),
+                  child: Row(
+                    spacing: 6,
+                    children: [
+                      const Icon(Icons.calendar_month, size: 16),
+                      Expanded(
+                        child: Text(
+                          DateFormatter.format(
+                            article!.publishedAt!,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                if (article!.author != null && article!.author!.isNotEmpty)
+                  Expanded(
+                      child: Row(
+                    spacing: 6,
+                    children: [
+                      const Icon(Icons.person, size: 16),
+                      Expanded(
+                        child: Text(
+                          article!.author ?? 'Unknown Author',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )),
               ],
             ),
           ],

@@ -1,7 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
+import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../injection_container.dart';
 import '../../../../../shared/article/domain/entities/article.dart';
 import '../../bloc/article/local/local_article_bloc.dart';
@@ -38,10 +41,12 @@ class ArticleDetailsView extends HookWidget {
 
   Widget _buildBody() {
     return SingleChildScrollView(
+      padding: AppDimensions.screenPadding,
       child: Column(
+        spacing: 20,
         children: [
-          _buildArticleTitleAndDate(),
           _buildArticleImage(),
+          _buildArticleTitleAndDate(),
           _buildArticleDescription(),
         ],
       ),
@@ -50,7 +55,7 @@ class ArticleDetailsView extends HookWidget {
 
   Widget _buildArticleTitleAndDate() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 22),
+      padding: const EdgeInsets.symmetric(horizontal: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -58,19 +63,29 @@ class ArticleDetailsView extends HookWidget {
           Text(
             article!.title!,
             style: const TextStyle(
-                fontFamily: 'Butler',
-                fontSize: 20,
-                fontWeight: FontWeight.w900),
+              fontFamily: 'Butler',
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 20),
           // DateTime
           Row(
             children: [
-              const Icon(Ionicons.time_outline, size: 16),
-              const SizedBox(width: 4),
+              CircleAvatar(
+                backgroundImage: CachedNetworkImageProvider(
+                  article!.urlToImage!,
+                ),
+              ),
+              const SizedBox(width: 10),
               Text(
-                article!.publishedAt!,
+                article!.author ?? 'Unknown Author',
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const Spacer(),
+              Text(
+                DateFormatter.format(article!.publishedAt!),
                 style: const TextStyle(fontSize: 12),
               ),
             ],
@@ -85,13 +100,19 @@ class ArticleDetailsView extends HookWidget {
       width: double.maxFinite,
       height: 250,
       margin: const EdgeInsets.only(top: 14),
-      child: Image.network(article!.urlToImage!, fit: BoxFit.cover),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(40),
+        child: CachedNetworkImage(
+          imageUrl: article!.urlToImage!,
+          fit: BoxFit.cover,
+        ),
+      ),
     );
   }
 
   Widget _buildArticleDescription() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 18),
       child: Text(
         '${article!.description ?? ''}\n\n${article!.content ?? ''}',
         style: const TextStyle(fontSize: 16),
