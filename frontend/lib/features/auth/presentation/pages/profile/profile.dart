@@ -2,12 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:news_app_clean_architecture/core/constants/colors.dart';
-
+import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
+import 'package:news_app_clean_architecture/core/utils/date_formatter.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_state.dart';
+import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
+import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
+import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/local/local_article_state.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_cubit.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
+import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
+import 'package:news_app_clean_architecture/shared/widgets/app_cached_image.dart';
+import 'package:news_app_clean_architecture/injection_container.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<LocalArticleBloc>()..add(const GetSavedArticles()),
+      child: const _ProfileView(),
+    );
+  }
+}
+
+class _ProfileView extends StatelessWidget {
+  const _ProfileView();
 
   @override
   Widget build(BuildContext context) {
@@ -15,34 +36,40 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(context),
       body: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, state) {
-          if (state is! AuthSuccess) {
+        builder: (context, authState) {
+          if (authState is! AuthSuccess) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final user = state.user;
+          final user = authState.user;
+          final userArticles = _getUserArticles(context, user.uid);
+          final savedCount = _getSavedCount(context);
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.screenPaddingHorizontal,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
                 _buildProfileHeader(
-                  photoUrl: null,
                   name: user.displayName ?? 'Unknown',
                   email: user.email ?? '',
                 ),
                 const SizedBox(height: 24),
-                _buildStatsCard(),
+                _buildStatsCard(
+                  savedCount: savedCount,
+                  publicationsCount: userArticles.length,
+                ),
                 const SizedBox(height: 28),
-                _buildPublicationsSection(),
+                _buildPublicationsSection(context, userArticles),
                 const SizedBox(height: 28),
                 _buildMenuItem(
                   icon: Ionicons.bookmark_outline,
                   label: 'My Bookmarks',
-                  badge: '1',
-                  onTap: () => _onShowSavedArticlesViewTapped(context),
+                  badge: savedCount > 0 ? '$savedCount' : null,
+                  onTap: () => Navigator.pushNamed(context, '/SavedArticles'),
                 ),
                 const SizedBox(height: 8),
                 _buildMenuItem(
@@ -59,13 +86,27 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  List<ArticleEntity> _getUserArticles(BuildContext context, String uid) {
+    final state = context.watch<FirebaseArticlesCubit>().state;
+    if (state is FirebaseArticlesDone) {
+      return state.articles
+          .where((article) => article.authorId == uid)
+          .toList();
+    }
+    return [];
+  }
+
+  int _getSavedCount(BuildContext context) {
+    final state = context.watch<LocalArticleBloc>().state;
+    if (state is LocalArticlesDone) {
+      return state.articles?.length ?? 0;
+    }
+    return 0;
+  }
+
   void _onSignOutTapped(BuildContext context) {
     Navigator.pop(context);
     context.read<AuthCubit>().signOut();
-  }
-
-  void _onShowSavedArticlesViewTapped(BuildContext context) {
-    Navigator.pushNamed(context, '/SavedArticles');
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -91,7 +132,6 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileHeader({
-    required String? photoUrl,
     required String name,
     required String email,
   }) {
@@ -100,15 +140,15 @@ class ProfileScreen extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 48,
-            backgroundColor: AppColors.secondary.withOpacity(0.2),
-            backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-            child: photoUrl == null
-                ? const Icon(
-                    Ionicons.person,
-                    size: 40,
-                    color: AppColors.primary,
-                  )
-                : null,
+            backgroundColor: AppColors.secondary.withValues(alpha: 0.2),
+            child: Text(
+              name.isNotEmpty ? name[0].toUpperCase() : 'U',
+              style: const TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
           ),
           const SizedBox(height: 14),
           Text(
@@ -132,20 +172,26 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsCard() {
+  Widget _buildStatsCard({
+    required int savedCount,
+    required int publicationsCount,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider.withOpacity(0.5)),
+        border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
       ),
       child: IntrinsicHeight(
         child: Row(
           children: [
             Expanded(
-              child: _buildStatItem(count: '42', label: 'Saved Articles'),
+              child: _buildStatItem(
+                count: '$savedCount',
+                label: 'Saved Articles',
+              ),
             ),
             VerticalDivider(
               color: AppColors.divider,
@@ -153,15 +199,18 @@ class ProfileScreen extends StatelessWidget {
               width: 1,
             ),
             Expanded(
-              child: _buildStatItem(count: '115', label: 'My Publications'),
+              child: _buildStatItem(
+                count: '$publicationsCount',
+                label: 'My Publications',
+              ),
             ),
             VerticalDivider(
               color: AppColors.divider,
               thickness: 1,
               width: 1,
             ),
-            Expanded(
-              child: _buildStatItem(count: '250', label: 'Reading History'),
+            const Expanded(
+              child: _StatItem(count: '250', label: 'Reading History'),
             ),
           ],
         ),
@@ -170,49 +219,13 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildStatItem({required String count, required String label}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          count,
-          style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.captionText,
-          ),
-        ),
-      ],
-    );
+    return _StatItem(count: count, label: label);
   }
 
-  Widget _buildPublicationsSection() {
-    // TODO: Replace with real data from a cubit/bloc
-    final publications = [
-      _PublicationItem(
-        title: 'The Future of AI',
-        date: 'Oct 26, 2023',
-        imageUrl: 'https://picsum.photos/seed/ai/300/200',
-      ),
-      _PublicationItem(
-        title: 'Climate Change Report',
-        date: 'Oct 24, 2023',
-        imageUrl: 'https://picsum.photos/seed/climate/300/200',
-      ),
-      _PublicationItem(
-        title: 'Local Tech Boom',
-        date: 'Oct 20, 2023',
-        imageUrl: 'https://picsum.photos/seed/tech/300/200',
-      ),
-    ];
-
+  Widget _buildPublicationsSection(
+    BuildContext context,
+    List<ArticleEntity> publications,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -225,33 +238,61 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        SizedBox(
-          height: 170,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: publications.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 14),
-            itemBuilder: (context, index) {
-              final pub = publications[index];
-              return _buildPublicationCard(
-                title: pub.title,
-                date: pub.date,
-                imageUrl: pub.imageUrl,
-                onTap: () {
-                  // TODO: Navigate to article detail
-                },
-              );
-            },
+        if (publications.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 32),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.divider.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Ionicons.document_text_outline,
+                  size: 32,
+                  color: AppColors.captionText,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'No publications yet',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.captionText,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          SizedBox(
+            height: 170,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: publications.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 14),
+              itemBuilder: (context, index) {
+                final article = publications[index];
+                return _buildPublicationCard(
+                  article: article,
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '/ArticleDetails',
+                    arguments: article,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
       ],
     );
   }
 
   Widget _buildPublicationCard({
-    required String title,
-    required String date,
-    required String imageUrl,
+    required ArticleEntity article,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -261,30 +302,15 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
+            AppCachedImage(
+              imageUrl: article.urlToImage ?? '',
+              width: 130,
+              height: 100,
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                imageUrl,
-                width: 130,
-                height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 130,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Ionicons.image_outline,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
             ),
             const SizedBox(height: 8),
             Text(
-              title,
+              article.title ?? '',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -295,7 +321,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              date,
+              DateFormatter.format(article.publishedAt),
               style: const TextStyle(
                 fontSize: 11,
                 color: AppColors.captionText,
@@ -320,7 +346,7 @@ class ProfileScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.divider.withOpacity(0.5)),
+          border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
         ),
         child: Row(
           children: [
@@ -338,8 +364,10 @@ class ProfileScreen extends StatelessWidget {
             ),
             if (badge != null)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.error,
                   borderRadius: BorderRadius.circular(12),
@@ -360,14 +388,34 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _PublicationItem {
-  final String title;
-  final String date;
-  final String imageUrl;
+class _StatItem extends StatelessWidget {
+  final String count;
+  final String label;
 
-  _PublicationItem({
-    required this.title,
-    required this.date,
-    required this.imageUrl,
-  });
+  const _StatItem({required this.count, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          count,
+          style: const TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: AppColors.captionText,
+          ),
+        ),
+      ],
+    );
+  }
 }
