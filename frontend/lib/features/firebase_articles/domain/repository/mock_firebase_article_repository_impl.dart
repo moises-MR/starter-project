@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:news_app_clean_architecture/features/firebase_articles/domain/entities/generated_article.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/params/create_article_params.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/repository/firebase_article_repository.dart';
@@ -61,5 +64,20 @@ class MockFirebaseArticleRepositoryImpl implements FirebaseArticleRepository {
   Future<void> deleteArticle(String articleId) async {
     await Future.delayed(const Duration(milliseconds: 300));
     _articles.removeWhere((article) => article.id.toString() == articleId);
+  }
+
+  @override
+  Future<GeneratedArticle> generateArticleContent(String prompt) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return const GeneratedArticle(
+      title: 'Mock Generated Title',
+      description: 'Mock generated description',
+      content: 'Mock generated content paragraph.',
+    );
+  }
+
+  @override
+  Future<File> generateArticleImage(String articleTitle) async {
+    throw UnimplementedError('Image generation not available in mock');
   }
 }

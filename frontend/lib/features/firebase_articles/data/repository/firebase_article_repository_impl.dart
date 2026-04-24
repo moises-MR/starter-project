@@ -7,13 +7,18 @@ import 'package:news_app_clean_architecture/features/firebase_articles/domain/pa
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/repository/firebase_article_repository.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 
+import '../../domain/entities/generated_article.dart';
+import '../data_sources/ai_article_data_source.dart';
+
 class FirebaseArticleRepositoryImpl implements FirebaseArticleRepository {
   final FirestoreArticleDataSource _firestoreDataSource;
   final StorageDataSource _storageDataSource;
+  final AiArticleDataSource _aiDataSource;
 
   FirebaseArticleRepositoryImpl(
     this._firestoreDataSource,
     this._storageDataSource,
+    this._aiDataSource,
   );
 
   @override
@@ -53,5 +58,15 @@ class FirebaseArticleRepositoryImpl implements FirebaseArticleRepository {
   @override
   Future<void> deleteArticle(String articleId) async {
     await _firestoreDataSource.deleteArticle(articleId);
+  }
+
+  @override
+  Future<GeneratedArticle> generateArticleContent(String prompt) {
+    return _aiDataSource.generateArticle(prompt);
+  }
+
+  @override
+  Future<File> generateArticleImage(String articleTitle) {
+    return _aiDataSource.generateArticleImage(articleTitle);
   }
 }

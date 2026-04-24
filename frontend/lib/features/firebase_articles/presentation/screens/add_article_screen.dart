@@ -25,7 +25,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
   final _imagePicker = ImagePicker();
 
   File? _thumbnailFile;
-  final bool _isGenerating = false;
+  bool _isGenerating = false;
 
   @override
   void dispose() {
@@ -441,7 +441,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
     }
   }
 
-  void _handleGenerateWithAI() {
+  Future<void> _handleGenerateWithAI() async {
     final prompt = _aiPromptController.text.trim();
 
     if (prompt.isEmpty) {
@@ -454,7 +454,37 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
       return;
     }
 
-    print('AI Generate tapped with prompt: $prompt');
+    setState(() => _isGenerating = true);
+
+    try {
+      final cubit = context.read<FirebaseArticlesCubit>();
+
+      final generated = await cubit.generateArticleContent(prompt);
+
+      _titleController.text = generated.title;
+      _descriptionController.text = generated.description;
+      _contentController.text = generated.content;
+
+      final imageFile = await cubit.generateArticleImage(generated.title);
+
+      if (mounted) {
+        setState(() => _thumbnailFile = imageFile);
+      }
+    } catch (e) {
+      if (mounted) {
+        debugPrint('Generation failed: ${e.toString()}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.error,
+            content: Text('Generation failed: ${e.toString()}'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGenerating = false);
+      }
+    }
   }
 
   void _handlePublish() {

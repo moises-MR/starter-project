@@ -30,6 +30,9 @@ import 'package:news_app_clean_architecture/features/firebase_articles/domain/us
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/use_cases/create_article.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/use_cases/delete_firebase_article.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_cubit.dart';
+import 'package:news_app_clean_architecture/core/constants/constants.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/data/data_sources/ai_article_data_source.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/domain/use_cases/generate_article_content.dart';
 
 final sl = GetIt.instance;
 
@@ -122,8 +125,12 @@ Future<void> initializeDependencies() async {
     StorageDataSource(sl()),
   );
 
+  sl.registerSingleton<AiArticleDataSource>(
+    AiArticleDataSource(geminiApiKey),
+  );
+
   sl.registerSingleton<FirebaseArticleRepository>(
-    FirebaseArticleRepositoryImpl(sl(), sl()),
+    FirebaseArticleRepositoryImpl(sl(), sl(), sl()),
   );
 
   sl.registerSingleton<GetFirebaseArticlesUseCase>(
@@ -138,7 +145,11 @@ Future<void> initializeDependencies() async {
     DeleteFirebaseArticleUseCase(sl()),
   );
 
+  sl.registerSingleton<GenerateArticleContentUseCase>(
+    GenerateArticleContentUseCase(sl()),
+  );
+
   sl.registerFactory<FirebaseArticlesCubit>(
-    () => FirebaseArticlesCubit(sl(), sl(), sl()),
+    () => FirebaseArticlesCubit(sl(), sl(), sl(), sl(), sl()),
   );
 }
