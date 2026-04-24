@@ -461,8 +461,8 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
 
       final generated = await cubit.generateArticleContent(prompt);
 
-      _titleController.text = generated.title;
-      _descriptionController.text = generated.description;
+      await _typewriterEffect(_titleController, generated.title);
+      await _typewriterEffect(_descriptionController, generated.description);
       _contentController.text = generated.content;
 
       final imageFile = await cubit.generateArticleImage(generated.title);
@@ -525,5 +525,18 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
             thumbnailPath: _thumbnailFile!.path,
           ),
         );
+  }
+
+  Future<void> _typewriterEffect(
+    TextEditingController controller,
+    String text,
+  ) async {
+    controller.clear();
+    for (int i = 0; i < text.length; i++) {
+      if (!mounted) return;
+      controller.text = text.substring(0, i + 1);
+      controller.selection = TextSelection.collapsed(offset: i + 1);
+      await Future.delayed(const Duration(milliseconds: 3));
+    }
   }
 }
