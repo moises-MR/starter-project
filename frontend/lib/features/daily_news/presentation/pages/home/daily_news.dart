@@ -27,59 +27,11 @@ class _DailyNewsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppbar(context),
       body: _buildBody(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _onAddArticleTapped(context),
         child: const Icon(Icons.add),
       ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppbar(BuildContext context) {
-    return AppBar(
-      elevation: 0,
-      surfaceTintColor: Colors.transparent,
-      leadingWidth: 72,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 20),
-        child: CircleAvatar(
-          radius: 20,
-          backgroundColor: const Color(0xFFD6E4F0),
-          child: Text(
-            'U',
-            style: TextStyle(
-              color: const Color(0xFF2D2D54),
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-      centerTitle: false,
-      title: Text(
-        DateFormatter.format(DateTime.now().toIso8601String()),
-        style: TextStyle(
-          color: Colors.grey.shade600,
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: GestureDetector(
-            onTap: () {
-              //TODO: búsqueda
-            },
-            child: const Icon(
-              Icons.search,
-              color: Color(0xFF2D2D54),
-              size: 30,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -90,23 +42,19 @@ class _DailyNewsView extends StatelessWidget {
           builder: (context, firebaseState) {
             final List<ArticleEntity> allArticles = [];
 
-            // Add Firebase articles first (newest)
             if (firebaseState is FirebaseArticlesDone) {
               allArticles.addAll(firebaseState.articles);
             }
 
-            // Add API articles
             if (remoteState is RemoteArticlesDone) {
               allArticles.addAll(remoteState.articles!);
             }
 
-            // Both loading
             if (remoteState is RemoteArticlesLoading &&
                 firebaseState is FirebaseArticlesLoading) {
               return const Center(child: CupertinoActivityIndicator());
             }
 
-            // Both failed and no articles
             if (allArticles.isEmpty) {
               if (remoteState is RemoteArticlesError ||
                   firebaseState is FirebaseArticlesError) {
@@ -127,23 +75,15 @@ class _DailyNewsView extends StatelessWidget {
     List<ArticleEntity> articles,
   ) {
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
+        _buildSliverAppBar(),
         SliverPadding(
-          padding: AppDimensions.screenPadding,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.screenPaddingHorizontal,
+          ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              const Padding(
-                padding: EdgeInsets.only(bottom: 20.0, top: 12.0),
-                child: Text(
-                  'Breaking News',
-                  style: TextStyle(
-                    fontSize: 35,
-                    fontWeight: FontWeight.w800,
-                    fontFamily: 'Butler',
-                    color: AppColors.titleDark,
-                  ),
-                ),
-              ),
               FeaturedArticleCard(
                 article: articles.first,
                 onArticlePressed: (article) => Navigator.pushNamed(
@@ -163,14 +103,16 @@ class _DailyNewsView extends StatelessWidget {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final article = articles[index + 1];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: ArticleWidget(
-                    article: article,
-                    onArticlePressed: (article) => Navigator.pushNamed(
-                      context,
-                      '/ArticleDetails',
-                      arguments: article,
+                return _AnimatedArticleItem(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: ArticleWidget(
+                      article: article,
+                      onArticlePressed: (article) => Navigator.pushNamed(
+                        context,
+                        '/ArticleDetails',
+                        arguments: article,
+                      ),
                     ),
                   ),
                 );
@@ -180,6 +122,101 @@ class _DailyNewsView extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar() {
+    const double expandedHeight = 130.0;
+
+    return SliverAppBar(
+      expandedHeight: expandedHeight,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: AppColors.background,
+      surfaceTintColor: Colors.transparent,
+      leadingWidth: 72,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: CircleAvatar(
+          radius: 20,
+          backgroundColor: const Color(0xFFD6E4F0),
+        ),
+      ),
+      centerTitle: false,
+      title: const SizedBox.shrink(),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: GestureDetector(
+            onTap: () {},
+            child: const Icon(
+              Icons.search,
+              color: AppColors.titleDark,
+              size: 30,
+            ),
+          ),
+        ),
+      ],
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final double top = constraints.biggest.height;
+          final double statusBar = MediaQuery.of(context).padding.top;
+          final double minHeight = statusBar + kToolbarHeight;
+          final double maxHeight = expandedHeight + statusBar;
+          final double progress =
+              ((top - minHeight) / (maxHeight - minHeight)).clamp(0.0, 1.0);
+          final double leftSize = 82.0;
+
+          // Breaking News: expanded = bottom left big, collapsed = toolbar position small
+          final double titleFontSize = 16 + (19 * progress);
+          final double titleBottom = 18 + (2 * progress);
+
+          final double titleLeft = AppDimensions.screenPaddingHorizontal +
+              ((leftSize - AppDimensions.screenPaddingHorizontal) *
+                  (1 - progress));
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              // Date text - fades out on collapse
+              Positioned(
+                left: leftSize,
+                top: statusBar + 14,
+                child: Opacity(
+                  opacity: progress,
+                  child: Text(
+                    "Today, ${DateFormatter.format(DateTime.now().toIso8601String())}",
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+              // Breaking News - moves from bottom to toolbar center
+              Positioned(
+                left: titleLeft,
+                bottom: titleBottom,
+                child: Text(
+                  'Breaking News',
+                  style: TextStyle(
+                    fontSize: titleFontSize,
+                    fontWeight: FontWeight.lerp(
+                      FontWeight.w600,
+                      FontWeight.w800,
+                      progress,
+                    ),
+                    fontFamily: 'Butler',
+                    color: AppColors.titleDark,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -201,5 +238,70 @@ class _DailyNewsView extends StatelessWidget {
         ),
       );
     }
+  }
+}
+
+class _AnimatedArticleItem extends StatefulWidget {
+  final Widget child;
+
+  const _AnimatedArticleItem({
+    required this.child,
+  });
+
+  @override
+  State<_AnimatedArticleItem> createState() => _AnimatedArticleItemState();
+}
+
+class _AnimatedArticleItemState extends State<_AnimatedArticleItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
+
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.45),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(
+        position: _slide,
+        child: widget.child,
+      ),
+    );
   }
 }
