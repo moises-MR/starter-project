@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:news_app_clean_architecture/core/constants/colors.dart';
 import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
 import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../injection_container.dart';
@@ -30,10 +31,12 @@ class ArticleDetailsView extends HookWidget {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       leading: Builder(
-        builder: (context) => GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _onBackButtonTapped(context),
-          child: const Icon(Ionicons.chevron_back, color: Colors.black),
+        builder: (context) => Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
+          child: _CircularButton(
+            icon: Icons.arrow_back,
+            onTap: () => _onBackButtonTapped(context),
+          ),
         ),
       ),
     );
@@ -139,6 +142,43 @@ class ArticleDetailsView extends HookWidget {
       const SnackBar(
         backgroundColor: Colors.black,
         content: Text('Article saved successfully.'),
+      ),
+    );
+  }
+}
+
+class _CircularButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _CircularButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              blurRadius: 15,
+              spreadRadius: 4,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: Colors.black87,
+          size: 20,
+        ),
       ),
     );
   }
