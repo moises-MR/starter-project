@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:news_app_clean_architecture/core/utils/date_formatter.dart';
 
+import '../../../../core/constants/colors.dart';
 import '../../../../shared/article/domain/entities/article.dart';
 
 class ArticleWidget extends StatelessWidget {
@@ -27,7 +28,7 @@ class ArticleWidget extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.0),
-          color: Colors.white,
+          color: AppColors.surface,
         ),
         padding: const EdgeInsetsDirectional.all(
           7.0,
@@ -55,7 +56,7 @@ class ArticleWidget extends StatelessWidget {
                   width: MediaQuery.of(context).size.width / 3.3,
                   height: double.maxFinite,
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: AppColors.inputFill,
                     image: DecorationImage(
                         image: imageProvider, fit: BoxFit.cover),
                   ),
@@ -70,7 +71,7 @@ class ArticleWidget extends StatelessWidget {
                   width: MediaQuery.of(context).size.width / 3,
                   height: double.maxFinite,
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: AppColors.inputFill,
                   ),
                   child: CupertinoActivityIndicator(),
                 ),
@@ -84,7 +85,7 @@ class ArticleWidget extends StatelessWidget {
                   width: MediaQuery.of(context).size.width / 3,
                   height: double.maxFinite,
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: AppColors.inputFill,
                   ),
                   child: Icon(Icons.error),
                 ),
@@ -109,7 +110,7 @@ class ArticleWidget extends StatelessWidget {
                 fontFamily: 'Butler',
                 fontWeight: FontWeight.w900,
                 fontSize: 18,
-                color: Colors.black87,
+                color: AppColors.titleDark,
               ),
             ),
 
@@ -144,7 +145,7 @@ class ArticleWidget extends StatelessWidget {
         onTap: _onRemove,
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 8),
-          child: Icon(Icons.remove_circle_outline, color: Colors.red),
+          child: Icon(Icons.remove_circle_outline, color: AppColors.error),
         ),
       );
     }

@@ -9,8 +9,8 @@ import 'package:news_app_clean_architecture/features/firebase_articles/presentat
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 import '../../../../../core/constants/dimensions.dart';
-import '../../../../../core/utils/date_formatter.dart';
 import '../../widgets/article_tile.dart';
+import '../../widgets/featured_article_card.dart';
 
 class DailyNews extends StatelessWidget {
   const DailyNews({super.key});
@@ -102,98 +102,35 @@ class _DailyNewsView extends StatelessWidget {
     BuildContext context,
     List<ArticleEntity> articles,
   ) {
-    return Expanded(
-      child: ListView.builder(
-        padding: AppDimensions.screenPadding,
-        itemCount: articles.length,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            final ArticleEntity article = articles[index];
-            return Container(
-              margin: EdgeInsets.only(
-                bottom: 20,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(40),
-              ),
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(40),
-                    child: Image.network(
-                      article.urlToImage!,
-                      height: 300,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: 15,
-                      bottom: 20,
-                      left: 20,
-                      right: 20,
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          article.title!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xff312F5C),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 12,
-                              backgroundImage: NetworkImage(
-                                article.urlToImage!,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              article.author ?? 'Unknown Author',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            Spacer(),
-                            Text(
-                              DateFormatter.format(
-                                article.publishedAt!,
-                              ),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
+    return ListView.builder(
+      padding: AppDimensions.screenPadding,
+      itemCount: articles.length,
+      itemBuilder: (context, index) {
+        final article = articles[index];
 
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
-            child: ArticleWidget(
-              article: articles[index],
-              onArticlePressed: (article) => Navigator.pushNamed(
-                  context, '/ArticleDetails',
-                  arguments: article),
+        if (index == 0) {
+          return FeaturedArticleCard(
+            article: article,
+            onArticlePressed: (article) => Navigator.pushNamed(
+              context,
+              '/ArticleDetails',
+              arguments: article,
             ),
           );
-        },
-      ),
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: ArticleWidget(
+            article: article,
+            onArticlePressed: (article) => Navigator.pushNamed(
+              context,
+              '/ArticleDetails',
+              arguments: article,
+            ),
+          ),
+        );
+      },
     );
   }
 
