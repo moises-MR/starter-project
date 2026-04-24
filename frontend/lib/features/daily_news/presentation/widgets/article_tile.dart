@@ -46,6 +46,8 @@ class ArticleWidget extends StatelessWidget {
   }
 
   Widget _buildImage(BuildContext context) {
+    final double imageWidth = MediaQuery.of(context).size.width / 3.3;
+
     return CachedNetworkImage(
         imageUrl: article!.urlToImage!,
         imageBuilder: (context, imageProvider) => Padding(
@@ -53,7 +55,7 @@ class ArticleWidget extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20.0),
                 child: Container(
-                  width: MediaQuery.of(context).size.width / 3.3,
+                  width: imageWidth,
                   height: double.maxFinite,
                   decoration: BoxDecoration(
                     color: AppColors.inputFill,
@@ -68,7 +70,7 @@ class ArticleWidget extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20.0),
                 child: Container(
-                  width: MediaQuery.of(context).size.width / 3,
+                  width: imageWidth,
                   height: double.maxFinite,
                   decoration: BoxDecoration(
                     color: AppColors.inputFill,
