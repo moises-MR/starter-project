@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/pages/profile/profile.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/pages/home/daily_news.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/pages/article_detail/article_detail.dart';
@@ -22,6 +23,9 @@ class AppRoutes {
       case '/SavedArticles':
         return _materialRoute(const SavedArticles());
 
+      case '/AddArticle':
+        return _materialRoute(const AddArticlePage());
+
       case '/Welcome':
         return _materialRoute(const WelcomePage());
 
@@ -31,8 +35,8 @@ class AppRoutes {
       case '/SignUp':
         return _materialRoute(const SignUpPage());
 
-      case '/AddArticle':
-        return _materialRoute(const AddArticlePage());
+      case '/Profile':
+        return _materialRoute(const ProfileScreen());
 
       default:
         return _materialRoute(const DailyNews());

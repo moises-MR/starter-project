@@ -169,6 +169,26 @@ class _DailyNewsView extends StatelessWidget {
     Navigator.pushNamed(context, '/SavedArticles');
   }
 
+  void _onAddProfileTapped(BuildContext context) {
+    final authState = context.read<AuthCubit>().state;
+
+    if (authState is AuthSuccess && !authState.user.isAnonymous) {
+      Navigator.pushNamed(context, '/Profile');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.black,
+          content: const Text('Sign in to view profile'),
+          action: SnackBarAction(
+            label: 'Sign In',
+            textColor: Colors.white,
+            onPressed: () => Navigator.pushNamed(context, '/Welcome'),
+          ),
+        ),
+      );
+    }
+  }
+
   SliverAppBar _buildSliverAppBar(
     BuildContext context,
   ) {
@@ -184,7 +204,10 @@ class _DailyNewsView extends StatelessWidget {
       leadingWidth: 72,
       leading: Padding(
         padding: const EdgeInsets.only(left: 20),
-        child: UserAvatar(),
+        child: GestureDetector(
+          onTap: () => _onAddProfileTapped(context),
+          child: UserAvatar(),
+        ),
       ),
       centerTitle: false,
       title: const SizedBox.shrink(),
@@ -195,17 +218,6 @@ class _DailyNewsView extends StatelessWidget {
             onTap: () => _onShowSavedArticlesViewTapped(context),
             child: const Icon(
               Icons.bookmark,
-              color: AppColors.titleDark,
-              size: 30,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: GestureDetector(
-            onTap: () {},
-            child: const Icon(
-              Icons.search,
               color: AppColors.titleDark,
               size: 30,
             ),
