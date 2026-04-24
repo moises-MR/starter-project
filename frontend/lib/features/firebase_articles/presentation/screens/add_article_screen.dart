@@ -9,6 +9,7 @@ import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/params/create_article_params.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_cubit.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/presentation/widgets/markdown_toolbar.dart';
 
 class AddArticleScreen extends StatefulWidget {
   const AddArticleScreen({super.key});
@@ -363,7 +364,7 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
   Widget _buildDescriptionField() {
     return TextField(
       controller: _descriptionController,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 16,
         color: AppColors.captionText,
       ),
@@ -391,17 +392,25 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
           ),
         ),
         const SizedBox(height: 8),
+        MarkdownToolbar(
+          controller: _contentController,
+          onImageTap: _pickThumbnail,
+        ),
+        const SizedBox(height: 8),
         TextField(
           controller: _contentController,
           maxLines: null,
-          minLines: 8,
+          minLines: 12,
           style: const TextStyle(
             fontSize: 15,
             height: 1.6,
             color: AppColors.textPrimary,
           ),
           decoration: InputDecoration(
-            hintText: 'Write your article content...',
+            hintText: 'Write your article using markdown...\n\n'
+                '**Bold text** for emphasis\n'
+                '*Italic text* for style\n'
+                '- Bullet points for lists',
             hintStyle: const TextStyle(
               color: AppColors.textTertiary,
               fontSize: 14,
