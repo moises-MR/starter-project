@@ -14,7 +14,7 @@ class FirebaseArticlesCubit extends Cubit<FirebaseArticlesState> {
     this._getFirebaseArticlesUseCase,
     this._createArticleUseCase,
     this._deleteFirebaseArticleUseCase,
-  ) : super(const FirebaseArticlesLoading());
+  ) : super(const FirebaseArticlesInitial());
 
   Future<void> getArticles() async {
     emit(const FirebaseArticlesLoading());

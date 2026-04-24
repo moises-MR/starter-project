@@ -8,6 +8,10 @@ abstract class FirebaseArticlesState extends Equatable {
   List<Object?> get props => [];
 }
 
+class FirebaseArticlesInitial extends FirebaseArticlesState {
+  const FirebaseArticlesInitial();
+}
+
 class FirebaseArticlesLoading extends FirebaseArticlesState {
   const FirebaseArticlesLoading();
 }

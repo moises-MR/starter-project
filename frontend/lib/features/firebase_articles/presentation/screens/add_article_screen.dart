@@ -21,7 +21,6 @@ class AddArticleScreen extends StatefulWidget {
 
 class _AddArticleScreenState extends State<AddArticleScreen> {
   final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
   final _contentController = TextEditingController();
   final _imagePicker = ImagePicker();
 
@@ -31,7 +30,6 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    _descriptionController.dispose();
     _contentController.dispose();
     super.dispose();
   }
@@ -139,8 +137,6 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
           const SizedBox(height: 20),
           _buildTitleField(),
           const SizedBox(height: 16),
-          _buildDescriptionField(),
-          const SizedBox(height: 16),
           _buildContentLabel(),
           const SizedBox(height: 8),
           MarkdownToolbar(
@@ -211,23 +207,6 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
     );
   }
 
-  Widget _buildDescriptionField() {
-    return TextField(
-      controller: _descriptionController,
-      style: TextStyle(
-        fontSize: 16,
-        color: Colors.grey[700],
-      ),
-      maxLines: null,
-      decoration: InputDecoration(
-        hintText: 'Write a short description...',
-        border: InputBorder.none,
-        contentPadding: EdgeInsets.zero,
-        hintStyle: TextStyle(color: Colors.grey[400]),
-      ),
-    );
-  }
-
   Widget _buildContentLabel() {
     return Text(
       'Content',
@@ -293,15 +272,6 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
               fontFamily: 'Butler',
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            _descriptionController.text.isEmpty
-                ? 'No description'
-                : _descriptionController.text,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 16),
-          const Divider(),
           const SizedBox(height: 16),
           MarkdownBody(
             data: _contentController.text.isEmpty
@@ -335,14 +305,14 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
 
   void _handlePublish() {
     final title = _titleController.text.trim();
-    final description = _descriptionController.text.trim();
+
     final content = _contentController.text.trim();
 
-    if (title.isEmpty || description.isEmpty || content.isEmpty) {
+    if (title.isEmpty || content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           backgroundColor: Colors.black,
-          content: Text('Please fill in title, description and content'),
+          content: Text('Please fill in title and content'),
         ),
       );
       return;
@@ -364,7 +334,6 @@ class _AddArticleScreenState extends State<AddArticleScreen> {
     context.read<FirebaseArticlesCubit>().createArticle(
           CreateArticleParams(
             title: title,
-            description: description,
             content: content,
             author: authState.user.displayName ?? 'Unknown',
             authorId: authState.user.uid,

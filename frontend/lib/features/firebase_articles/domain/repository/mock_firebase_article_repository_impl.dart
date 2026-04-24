@@ -48,7 +48,6 @@ class MockFirebaseArticleRepositoryImpl implements FirebaseArticleRepository {
       author: params.author,
       authorId: params.authorId,
       title: params.title,
-      description: params.description,
       urlToImage:
           'https://picsum.photos/800/400?random=${_articles.length + 1}',
       publishedAt: DateTime.now().toIso8601String(),

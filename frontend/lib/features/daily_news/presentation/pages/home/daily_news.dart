@@ -1,14 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
-
-import '../../../../../shared/article/domain/entities/article.dart';
+import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 import '../../widgets/article_tile.dart';
 
 class DailyNews extends StatelessWidget {
-  const DailyNews({Key? key}) : super(key: key);
+  const DailyNews({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,13 @@ class DailyNews extends StatelessWidget {
             child: Icon(Icons.bookmark, color: Colors.black),
           ),
         ),
+        GestureDetector(
+          onTap: () => _onSignOutTapped(context),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14),
+            child: Icon(Icons.logout, color: Colors.black),
+          ),
+        ),
       ],
     );
   }
@@ -38,13 +46,15 @@ class DailyNews extends StatelessWidget {
       builder: (context, state) {
         if (state is RemoteArticlesLoading) {
           return Scaffold(
-              appBar: _buildAppbar(context),
-              body: const Center(child: CupertinoActivityIndicator()));
+            appBar: _buildAppbar(context),
+            body: const Center(child: CupertinoActivityIndicator()),
+          );
         }
         if (state is RemoteArticlesError) {
           return Scaffold(
-              appBar: _buildAppbar(context),
-              body: const Center(child: Icon(Icons.refresh)));
+            appBar: _buildAppbar(context),
+            body: const Center(child: Icon(Icons.refresh)),
+          );
         }
         if (state is RemoteArticlesDone) {
           return _buildArticlesPage(context, state.articles!);
@@ -55,13 +65,14 @@ class DailyNews extends StatelessWidget {
   }
 
   Widget _buildArticlesPage(
-      BuildContext context, List<ArticleEntity> articles) {
+    BuildContext context,
+    List<ArticleEntity> articles,
+  ) {
     List<Widget> articleWidgets = [];
     for (var article in articles) {
       articleWidgets.add(ArticleWidget(
         article: article,
-        onArticlePressed: (article) =>
-            _onArticlePressed(context, article as ArticleEntity),
+        onArticlePressed: (article) => _onArticlePressed(context, article),
       ));
     }
 
@@ -71,9 +82,7 @@ class DailyNews extends StatelessWidget {
         children: articleWidgets,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: REPLACE ROUTE WITH YOUR "ADD ARTICLE" PAGE
-        },
+        onPressed: () => _onAddArticleTapped(context),
         child: const Icon(Icons.add),
       ),
     );
@@ -85,5 +94,29 @@ class DailyNews extends StatelessWidget {
 
   void _onShowSavedArticlesViewTapped(BuildContext context) {
     Navigator.pushNamed(context, '/SavedArticles');
+  }
+
+  void _onAddArticleTapped(BuildContext context) {
+    final authState = context.read<AuthCubit>().state;
+
+    if (authState is AuthSuccess && !authState.user.isAnonymous) {
+      Navigator.pushNamed(context, '/AddArticle');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.black,
+          content: const Text('Sign in to create articles'),
+          action: SnackBarAction(
+            label: 'Sign In',
+            textColor: Colors.white,
+            onPressed: () => Navigator.pushNamed(context, '/Welcome'),
+          ),
+        ),
+      );
+    }
+  }
+
+  void _onSignOutTapped(BuildContext context) {
+    context.read<AuthCubit>().signOut();
   }
 }
