@@ -8,7 +8,6 @@ import 'package:news_app_clean_architecture/features/daily_news/presentation/blo
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_cubit.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
-import 'package:news_app_clean_architecture/injection_container.dart';
 import '../../widgets/article_tile.dart';
 
 class DailyNews extends StatelessWidget {
@@ -16,10 +15,7 @@ class DailyNews extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<FirebaseArticlesCubit>()..getArticles(),
-      child: _DailyNewsView(),
-    );
+    return _DailyNewsView();
   }
 }
 

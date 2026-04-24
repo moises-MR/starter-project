@@ -28,14 +28,15 @@ class FirebaseArticlesCubit extends Cubit<FirebaseArticlesState> {
   }
 
   Future<void> createArticle(CreateArticleParams params) async {
-    try {
-      final currentArticles = state is FirebaseArticlesDone
-          ? (state as FirebaseArticlesDone).articles
-          : <ArticleEntity>[];
+    final currentArticles = state is FirebaseArticlesDone
+        ? (state as FirebaseArticlesDone).articles
+        : <ArticleEntity>[];
 
+    emit(const FirebaseArticlesLoading());
+    try {
       final newArticle = await _createArticleUseCase(params: params);
 
-      emit(FirebaseArticleCreated());
+      emit(const FirebaseArticleCreated());
       emit(FirebaseArticlesDone([newArticle, ...currentArticles]));
     } catch (e) {
       emit(FirebaseArticlesError(e.toString()));
