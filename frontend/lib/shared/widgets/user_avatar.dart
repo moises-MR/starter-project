@@ -21,7 +21,7 @@ class UserAvatar extends StatelessWidget {
         builder: (context, state) {
           if (state is AuthSuccess && !state.user.isAnonymous) {
             final String initial =
-                state.user.displayName?.substring(0, 1).toUpperCase() ?? 'U';
+                state.user.displayName?.substring(0, 2).toUpperCase() ?? 'AU';
             return Text(
               initial,
               style: TextStyle(

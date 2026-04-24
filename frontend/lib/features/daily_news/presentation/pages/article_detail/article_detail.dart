@@ -4,13 +4,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:news_app_clean_architecture/core/constants/colors.dart';
 import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
-import 'package:news_app_clean_architecture/shared/widgets/user_avatar.dart';
 import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../injection_container.dart';
 import '../../../../../shared/article/domain/entities/article.dart';
 import '../../../../../shared/widgets/app_cached_image.dart';
 import '../../bloc/article/local/local_article_bloc.dart';
 import '../../bloc/article/local/local_article_event.dart';
+import '../../widgets/article_avatar.dart';
 
 class ArticleDetailsView extends HookWidget {
   final ArticleEntity? article;
@@ -77,7 +77,9 @@ class ArticleDetailsView extends HookWidget {
           // DateTime
           Row(
             children: [
-              UserAvatar(),
+              ArticleAvatar(
+                text: article?.author ?? 'AU',
+              ),
               const SizedBox(width: 10),
               Text(
                 article!.author ?? 'Unknown Author',

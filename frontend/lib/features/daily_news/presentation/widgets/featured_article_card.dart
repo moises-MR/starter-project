@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:news_app_clean_architecture/core/constants/colors.dart';
 import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
 import 'package:news_app_clean_architecture/core/utils/date_formatter.dart';
+import 'package:news_app_clean_architecture/features/daily_news/presentation/widgets/article_avatar.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 
 import '../../../../shared/widgets/app_cached_image.dart';
@@ -79,11 +79,9 @@ class FeaturedArticleCard extends StatelessWidget {
   Widget _buildAuthorRow() {
     return Row(
       children: [
-        CircleAvatar(
+        ArticleAvatar(
           radius: 12,
-          backgroundImage: CachedNetworkImageProvider(
-            article.urlToImage ?? '',
-          ),
+          text: article.author ?? 'AU',
         ),
         const SizedBox(width: 8),
         Expanded(

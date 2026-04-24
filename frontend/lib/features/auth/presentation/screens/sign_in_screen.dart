@@ -26,6 +26,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthSuccess) {
@@ -53,12 +54,13 @@ class _SignInScreenState extends State<SignInScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Welcome back',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'Butler',
+                  color: primaryColor,
                 ),
               ),
               const SizedBox(height: 8),
@@ -87,7 +89,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              _buildSignInButton(),
+              _buildSignInButton(primaryColor),
               const SizedBox(height: 16),
               _buildSignUpLink(),
             ],
@@ -97,7 +99,7 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _buildSignInButton() {
+  Widget _buildSignInButton(Color primaryColor) {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
@@ -108,7 +110,7 @@ class _SignInScreenState extends State<SignInScreen> {
           child: ElevatedButton(
             onPressed: isLoading ? null : _handleSignIn,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
+              backgroundColor: primaryColor,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

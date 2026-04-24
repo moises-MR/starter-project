@@ -83,7 +83,7 @@ class _DailyNewsView extends StatelessWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        _buildSliverAppBar(),
+        _buildSliverAppBar(context),
         if (loading)
           SliverPadding(
             padding: const EdgeInsets.symmetric(
@@ -117,7 +117,7 @@ class _DailyNewsView extends StatelessWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        _buildSliverAppBar(),
+        _buildSliverAppBar(context),
         SliverPadding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.screenPaddingHorizontal,
@@ -165,7 +165,13 @@ class _DailyNewsView extends StatelessWidget {
     );
   }
 
-  SliverAppBar _buildSliverAppBar() {
+  void _onShowSavedArticlesViewTapped(BuildContext context) {
+    Navigator.pushNamed(context, '/SavedArticles');
+  }
+
+  SliverAppBar _buildSliverAppBar(
+    BuildContext context,
+  ) {
     const double expandedHeight = 130.0;
 
     return SliverAppBar(
@@ -183,6 +189,17 @@ class _DailyNewsView extends StatelessWidget {
       centerTitle: false,
       title: const SizedBox.shrink(),
       actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: GestureDetector(
+            onTap: () => _onShowSavedArticlesViewTapped(context),
+            child: const Icon(
+              Icons.bookmark,
+              color: AppColors.titleDark,
+              size: 30,
+            ),
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 20),
           child: GestureDetector(

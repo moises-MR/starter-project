@@ -5,6 +5,11 @@ ThemeData theme() {
   return ThemeData(
     useMaterial3: true,
     fontFamily: 'Muli',
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      surface: AppColors.background,
+    ),
+    primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
     appBarTheme: _appBarTheme(),
     elevatedButtonTheme: _elevatedButtonTheme(),
