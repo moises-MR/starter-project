@@ -29,9 +29,8 @@ class ArticleWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.0),
           color: Colors.white,
         ),
-        padding: const EdgeInsetsDirectional.only(
-          bottom: 7,
-          top: 7,
+        padding: const EdgeInsetsDirectional.all(
+          7.0,
         ),
         height: MediaQuery.of(context).size.width / 3.3,
         child: Row(

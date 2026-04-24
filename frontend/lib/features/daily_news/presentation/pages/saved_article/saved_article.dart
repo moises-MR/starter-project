@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
+import '../../../../../core/constants/dimensions.dart';
 import '../../../../../injection_container.dart';
 
 import '../../bloc/article/local/local_article_bloc.dart';
@@ -62,15 +63,18 @@ class SavedArticles extends HookWidget {
     }
 
     return ListView.builder(
+      padding: AppDimensions.screenPadding,
       itemCount: articles.length,
       itemBuilder: (context, index) {
-        return ArticleWidget(
-          article: articles[index],
-          isRemovable: true,
-          onRemove: (article) =>
-              _onRemoveArticle(context, article as ArticleEntity),
-          onArticlePressed: (article) =>
-              _onArticlePressed(context, article as ArticleEntity),
+        return Padding(
+          padding:
+              EdgeInsets.only(bottom: index == articles.length - 1 ? 0 : 12.0),
+          child: ArticleWidget(
+            article: articles[index],
+            isRemovable: true,
+            onRemove: (article) => _onRemoveArticle(context, article),
+            onArticlePressed: (article) => _onArticlePressed(context, article),
+          ),
         );
       },
     );

@@ -8,6 +8,7 @@ import 'package:news_app_clean_architecture/features/daily_news/presentation/blo
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_cubit.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
+import '../../../../../core/constants/dimensions.dart';
 import '../../../../../core/utils/date_formatter.dart';
 import '../../widgets/article_tile.dart';
 
@@ -103,7 +104,7 @@ class _DailyNewsView extends StatelessWidget {
   ) {
     return Expanded(
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        padding: AppDimensions.screenPadding,
         itemCount: articles.length,
         itemBuilder: (context, index) {
           if (index == 0) {
@@ -182,11 +183,14 @@ class _DailyNewsView extends StatelessWidget {
             );
           }
 
-          return ArticleWidget(
-            article: articles[index],
-            onArticlePressed: (article) => Navigator.pushNamed(
-                context, '/ArticleDetails',
-                arguments: article),
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: ArticleWidget(
+              article: articles[index],
+              onArticlePressed: (article) => Navigator.pushNamed(
+                  context, '/ArticleDetails',
+                  arguments: article),
+            ),
           );
         },
       ),
