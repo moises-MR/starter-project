@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app_clean_architecture/features/auth/domain/params/sign_in_params.dart';
 import 'package:news_app_clean_architecture/features/auth/domain/params/sign_up_params.dart';
@@ -44,6 +45,8 @@ class AuthCubit extends Cubit<AuthState> {
         params: SignInParams(email: email, password: password),
       );
       emit(AuthSuccess(user));
+    } on FirebaseAuthException catch (e) {
+      emit(AuthFailure(e.message ?? 'Authentication failed'));
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -64,6 +67,8 @@ class AuthCubit extends Cubit<AuthState> {
         ),
       );
       emit(AuthSuccess(user));
+    } on FirebaseAuthException catch (e) {
+      emit(AuthFailure(e.message ?? 'Authentication failed'));
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -74,6 +79,8 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final user = await _signInAnonymousUseCase();
       emit(AuthSuccess(user));
+    } on FirebaseAuthException catch (e) {
+      emit(AuthFailure(e.message ?? 'Authentication failed'));
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }
@@ -84,6 +91,8 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await _signOutUseCase();
       emit(const AuthUnauthenticated());
+    } on FirebaseAuthException catch (e) {
+      emit(AuthFailure(e.message ?? 'Authentication failed'));
     } catch (e) {
       emit(AuthFailure(e.toString()));
     }

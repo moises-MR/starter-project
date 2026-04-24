@@ -1,5 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/data_sources/remote/news_api_service.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/repository/article_repository_impl.dart';
 import 'package:news_app_clean_architecture/features/daily_news/domain/repository/article_repository.dart';
@@ -11,7 +14,8 @@ import 'package:news_app_clean_architecture/features/daily_news/presentation/blo
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_app_clean_architecture/features/daily_news/data/data_sources/local/app_database.dart';
 import 'package:news_app_clean_architecture/features/auth/domain/repository/auth_repository.dart';
-import 'package:news_app_clean_architecture/features/auth/data/repository/mock_auth_repository_impl.dart';
+import 'package:news_app_clean_architecture/features/auth/data/data_sources/firebase_auth_data_source.dart';
+import 'package:news_app_clean_architecture/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:news_app_clean_architecture/features/auth/domain/use_cases/sign_in.dart';
 import 'package:news_app_clean_architecture/features/auth/domain/use_cases/sign_up.dart';
 import 'package:news_app_clean_architecture/features/auth/domain/use_cases/sign_in_anonymous.dart';
@@ -19,7 +23,9 @@ import 'package:news_app_clean_architecture/features/auth/domain/use_cases/sign_
 import 'package:news_app_clean_architecture/features/auth/domain/use_cases/get_current_user.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/repository/firebase_article_repository.dart';
-import 'package:news_app_clean_architecture/features/firebase_articles/domain/repository/mock_firebase_article_repository_impl.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/data/data_sources/firestore_article_data_source.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/data/data_sources/storage_data_source.dart';
+import 'package:news_app_clean_architecture/features/firebase_articles/data/repository/firebase_article_repository_impl.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/use_cases/get_firebase_articles.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/use_cases/create_article.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/use_cases/delete_firebase_article.dart';
@@ -34,6 +40,11 @@ Future<void> initializeDependencies() async {
 
   // Dio
   sl.registerSingleton<Dio>(Dio());
+
+  // Firebase
+  sl.registerSingleton<FirebaseAuth>(FirebaseAuth.instance);
+  sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
+  sl.registerSingleton<FirebaseStorage>(FirebaseStorage.instance);
 
   // --- Daily News Feature ---
 
@@ -69,8 +80,12 @@ Future<void> initializeDependencies() async {
 
   // --- Auth Feature ---
 
+  sl.registerSingleton<FirebaseAuthDataSource>(
+    FirebaseAuthDataSource(sl(), sl()),
+  );
+
   sl.registerSingleton<AuthRepository>(
-    MockAuthRepositoryImpl(),
+    AuthRepositoryImpl(sl()),
   );
 
   sl.registerSingleton<SignInUseCase>(
@@ -99,8 +114,16 @@ Future<void> initializeDependencies() async {
 
   // --- Firebase Articles Feature ---
 
+  sl.registerSingleton<FirestoreArticleDataSource>(
+    FirestoreArticleDataSource(sl()),
+  );
+
+  sl.registerSingleton<StorageDataSource>(
+    StorageDataSource(sl()),
+  );
+
   sl.registerSingleton<FirebaseArticleRepository>(
-    MockFirebaseArticleRepositoryImpl(),
+    FirebaseArticleRepositoryImpl(sl(), sl()),
   );
 
   sl.registerSingleton<GetFirebaseArticlesUseCase>(
