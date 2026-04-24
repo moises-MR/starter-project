@@ -10,6 +10,7 @@ import 'package:news_app_clean_architecture/features/firebase_articles/presentat
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/constants/dimensions.dart';
+import '../../../../../shared/widgets/user_avatar.dart';
 import '../../../../firebase_articles/presentation/widgets/article_tile_skeleton.dart';
 
 import '../../../../firebase_articles/presentation/widgets/featured_article_skeleton.dart';
@@ -177,31 +178,7 @@ class _DailyNewsView extends StatelessWidget {
       leadingWidth: 72,
       leading: Padding(
         padding: const EdgeInsets.only(left: 20),
-        child: CircleAvatar(
-          radius: 20,
-          backgroundColor: const Color(0xFFD6E4F0),
-          child: BlocBuilder<AuthCubit, AuthState>(
-            builder: (context, state) {
-              if (state is AuthSuccess && !state.user.isAnonymous) {
-                final String initial =
-                    state.user.displayName?.substring(0, 1).toUpperCase() ??
-                        'U';
-                return Text(
-                  initial,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                );
-              } else {
-                return const Icon(
-                  Icons.person,
-                  color: AppColors.primary,
-                );
-              }
-            },
-          ),
-        ),
+        child: UserAvatar(),
       ),
       centerTitle: false,
       title: const SizedBox.shrink(),

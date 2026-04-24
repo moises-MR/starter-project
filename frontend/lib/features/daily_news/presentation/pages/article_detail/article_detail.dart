@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:news_app_clean_architecture/core/constants/colors.dart';
 import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
+import 'package:news_app_clean_architecture/shared/widgets/user_avatar.dart';
 import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../injection_container.dart';
 import '../../../../../shared/article/domain/entities/article.dart';
@@ -77,11 +77,7 @@ class ArticleDetailsView extends HookWidget {
           // DateTime
           Row(
             children: [
-              CircleAvatar(
-                backgroundImage: CachedNetworkImageProvider(
-                  article!.urlToImage!,
-                ),
-              ),
+              UserAvatar(),
               const SizedBox(width: 10),
               Text(
                 article!.author ?? 'Unknown Author',
