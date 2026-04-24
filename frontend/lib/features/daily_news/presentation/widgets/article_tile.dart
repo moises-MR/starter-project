@@ -11,12 +11,12 @@ class ArticleWidget extends StatelessWidget {
   final void Function(ArticleEntity article)? onArticlePressed;
 
   const ArticleWidget({
-    Key? key,
+    super.key,
     this.article,
     this.onArticlePressed,
     this.isRemovable = false,
     this.onRemove,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
