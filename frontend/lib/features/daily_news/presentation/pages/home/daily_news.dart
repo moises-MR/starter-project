@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
 
-import '../../../domain/entities/article.dart';
+import '../../../../../shared/article/domain/entities/article.dart';
 import '../../widgets/article_tile.dart';
 
 class DailyNews extends StatelessWidget {
@@ -60,7 +60,8 @@ class DailyNews extends StatelessWidget {
     for (var article in articles) {
       articleWidgets.add(ArticleWidget(
         article: article,
-        onArticlePressed: (article) => _onArticlePressed(context, article),
+        onArticlePressed: (article) =>
+            _onArticlePressed(context, article as ArticleEntity),
       ));
     }
 
