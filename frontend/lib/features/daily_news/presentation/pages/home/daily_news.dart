@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_app_clean_architecture/core/utils/date_formatter.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:news_app_clean_architecture/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_app_clean_architecture/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
@@ -37,23 +38,45 @@ class _DailyNewsView extends StatelessWidget {
 
   PreferredSizeWidget _buildAppbar(BuildContext context) {
     return AppBar(
-      title: const Text(
-        'Daily News',
-        style: TextStyle(color: Colors.black),
-      ),
-      actions: [
-        GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/SavedArticles'),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14),
-            child: Icon(Icons.bookmark, color: Colors.black),
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      leadingWidth: 72,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: CircleAvatar(
+          radius: 20,
+          backgroundColor: const Color(0xFFD6E4F0),
+          child: Text(
+            'U',
+            style: TextStyle(
+              color: const Color(0xFF2D2D54),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
-        GestureDetector(
-          onTap: () => context.read<AuthCubit>().signOut(),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14),
-            child: Icon(Icons.logout, color: Colors.black),
+      ),
+      centerTitle: false,
+      title: Text(
+        DateFormatter.format(DateTime.now().toIso8601String()),
+        style: TextStyle(
+          color: Colors.grey.shade600,
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: GestureDetector(
+            onTap: () {
+              //TODO: búsqueda
+            },
+            child: const Icon(
+              Icons.search,
+              color: Color(0xFF2D2D54),
+              size: 30,
+            ),
           ),
         ),
       ],
@@ -110,7 +133,7 @@ class _DailyNewsView extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               const Padding(
-                padding: EdgeInsets.only(bottom: 20.0),
+                padding: EdgeInsets.only(bottom: 20.0, top: 12.0),
                 child: Text(
                   'Breaking News',
                   style: TextStyle(
