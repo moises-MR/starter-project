@@ -8,6 +8,7 @@ import 'package:news_app_clean_architecture/features/daily_news/presentation/blo
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_cubit.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
+import '../../../../../core/constants/colors.dart';
 import '../../../../../core/constants/dimensions.dart';
 import '../../widgets/article_tile.dart';
 import '../../widgets/featured_article_card.dart';
@@ -102,35 +103,60 @@ class _DailyNewsView extends StatelessWidget {
     BuildContext context,
     List<ArticleEntity> articles,
   ) {
-    return ListView.builder(
-      padding: AppDimensions.screenPadding,
-      itemCount: articles.length,
-      itemBuilder: (context, index) {
-        final article = articles[index];
-
-        if (index == 0) {
-          return FeaturedArticleCard(
-            article: article,
-            onArticlePressed: (article) => Navigator.pushNamed(
-              context,
-              '/ArticleDetails',
-              arguments: article,
-            ),
-          );
-        }
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12.0),
-          child: ArticleWidget(
-            article: article,
-            onArticlePressed: (article) => Navigator.pushNamed(
-              context,
-              '/ArticleDetails',
-              arguments: article,
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: AppDimensions.screenPadding,
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              const Padding(
+                padding: EdgeInsets.only(bottom: 20.0),
+                child: Text(
+                  'Breaking News',
+                  style: TextStyle(
+                    fontSize: 35,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: 'Butler',
+                    color: AppColors.titleDark,
+                  ),
+                ),
+              ),
+              FeaturedArticleCard(
+                article: articles.first,
+                onArticlePressed: (article) => Navigator.pushNamed(
+                  context,
+                  '/ArticleDetails',
+                  arguments: article,
+                ),
+              ),
+            ]),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.screenPaddingHorizontal,
+          ),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final article = articles[index + 1];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: ArticleWidget(
+                    article: article,
+                    onArticlePressed: (article) => Navigator.pushNamed(
+                      context,
+                      '/ArticleDetails',
+                      arguments: article,
+                    ),
+                  ),
+                );
+              },
+              childCount: articles.length - 1,
             ),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
