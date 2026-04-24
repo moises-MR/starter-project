@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app_clean_architecture/core/utils/date_formatter.dart';
@@ -11,6 +10,9 @@ import 'package:news_app_clean_architecture/features/firebase_articles/presentat
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/constants/dimensions.dart';
+import '../../../../firebase_articles/presentation/widgets/article_tile_skeleton.dart';
+
+import '../../../../firebase_articles/presentation/widgets/featured_article_skeleton.dart';
 import '../../widgets/article_tile.dart';
 import '../../widgets/featured_article_card.dart';
 
@@ -50,23 +52,60 @@ class _DailyNewsView extends StatelessWidget {
               allArticles.addAll(remoteState.articles!);
             }
 
-            if (remoteState is RemoteArticlesLoading &&
-                firebaseState is FirebaseArticlesLoading) {
-              return const Center(child: CupertinoActivityIndicator());
+            final bool isLoading = remoteState is RemoteArticlesLoading &&
+                firebaseState is FirebaseArticlesLoading;
+
+            final bool isEmpty = allArticles.isEmpty &&
+                (remoteState is RemoteArticlesError ||
+                    firebaseState is FirebaseArticlesError);
+
+            if (isLoading || (allArticles.isEmpty && !isEmpty)) {
+              return _buildWithAppBar(context, loading: true);
             }
 
-            if (allArticles.isEmpty) {
-              if (remoteState is RemoteArticlesError ||
-                  firebaseState is FirebaseArticlesError) {
-                return const Center(child: Icon(Icons.refresh));
-              }
-              return const Center(child: CupertinoActivityIndicator());
+            if (isEmpty) {
+              return _buildWithAppBar(context, error: true);
             }
 
             return _buildArticlesList(context, allArticles);
           },
         );
       },
+    );
+  }
+
+  Widget _buildWithAppBar(
+    BuildContext context, {
+    bool loading = false,
+    bool error = false,
+  }) {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        _buildSliverAppBar(),
+        if (loading)
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.screenPaddingHorizontal,
+            ),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                const FeaturedArticleSkeleton(),
+                ...List.generate(
+                  3,
+                  (index) => const Padding(
+                    padding: EdgeInsets.only(bottom: 12.0),
+                    child: ArticleTileSkeleton(),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        if (error)
+          const SliverFillRemaining(
+            child: Center(child: Icon(Icons.refresh)),
+          ),
+      ],
     );
   }
 
@@ -141,6 +180,27 @@ class _DailyNewsView extends StatelessWidget {
         child: CircleAvatar(
           radius: 20,
           backgroundColor: const Color(0xFFD6E4F0),
+          child: BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              if (state is AuthSuccess && !state.user.isAnonymous) {
+                final String initial =
+                    state.user.displayName?.substring(0, 1).toUpperCase() ??
+                        'U';
+                return Text(
+                  initial,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              } else {
+                return const Icon(
+                  Icons.person,
+                  color: AppColors.primary,
+                );
+              }
+            },
+          ),
         ),
       ),
       centerTitle: false,
