@@ -54,6 +54,7 @@ class ArticleWidget extends StatelessWidget {
         width: imageWidth,
         height: double.maxFinite,
         borderRadius: BorderRadius.circular(20.0),
+        heroTag: article!.heroTag,
       ),
     );
   }

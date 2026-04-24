@@ -23,6 +23,8 @@ class ArticleEntity extends Equatable {
     this.content,
   });
 
+  String get heroTag => 'article_image_${urlToImage ?? id ?? title}';
+
   @override
   List<Object?> get props {
     return [

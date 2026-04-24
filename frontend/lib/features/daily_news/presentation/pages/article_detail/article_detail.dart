@@ -107,6 +107,7 @@ class ArticleDetailsView extends HookWidget {
         width: double.infinity,
         height: 250,
         borderRadius: BorderRadius.circular(40),
+        heroTag: article!.heroTag,
       ),
     );
   }

@@ -9,6 +9,7 @@ class AppCachedImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final BorderRadius? borderRadius;
+  final String? heroTag;
 
   const AppCachedImage({
     super.key,
@@ -17,11 +18,12 @@ class AppCachedImage extends StatelessWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.borderRadius,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
+    final image = ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
       child: CachedNetworkImage(
         imageUrl: imageUrl,
@@ -32,6 +34,15 @@ class AppCachedImage extends StatelessWidget {
         errorWidget: (context, url, error) => _buildError(),
       ),
     );
+
+    if (heroTag != null && imageUrl.isNotEmpty) {
+      return Hero(
+        tag: heroTag!,
+        child: image,
+      );
+    }
+
+    return image;
   }
 
   Widget _buildPlaceholder() {

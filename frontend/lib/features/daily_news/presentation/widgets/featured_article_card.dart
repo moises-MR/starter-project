@@ -44,6 +44,7 @@ class FeaturedArticleCard extends StatelessWidget {
       height: imageHeight,
       width: double.infinity,
       borderRadius: BorderRadius.circular(40),
+      heroTag: article.heroTag,
     );
   }
 
