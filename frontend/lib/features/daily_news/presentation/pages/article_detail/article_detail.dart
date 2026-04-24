@@ -8,6 +8,7 @@ import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
 import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../injection_container.dart';
 import '../../../../../shared/article/domain/entities/article.dart';
+import '../../../../../shared/widgets/app_cached_image.dart';
 import '../../bloc/article/local/local_article_bloc.dart';
 import '../../bloc/article/local/local_article_event.dart';
 
@@ -99,27 +100,31 @@ class ArticleDetailsView extends HookWidget {
   }
 
   Widget _buildArticleImage() {
-    return Container(
-      width: double.maxFinite,
-      height: 250,
-      margin: const EdgeInsets.only(top: 14),
-      child: ClipRRect(
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: AppCachedImage(
+        imageUrl: article!.urlToImage ?? '',
+        width: double.infinity,
+        height: 250,
         borderRadius: BorderRadius.circular(40),
-        child: CachedNetworkImage(
-          imageUrl: article!.urlToImage!,
-          fit: BoxFit.cover,
-        ),
       ),
     );
   }
 
   Widget _buildArticleDescription() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 18),
-      child: Text(
-        '${article!.description ?? ''}\n\n${article!.content ?? ''}',
-        style: const TextStyle(fontSize: 16),
-      ),
+    final description = article!.description ?? '';
+    final content = article!.content ?? '';
+
+    final text = [
+      if (description.isNotEmpty) description,
+      if (content.isNotEmpty) content,
+    ].join('\n\n');
+
+    if (text.isEmpty) return const SizedBox.shrink();
+
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 16),
     );
   }
 

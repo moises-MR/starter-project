@@ -5,6 +5,7 @@ import 'package:news_app_clean_architecture/core/utils/date_formatter.dart';
 
 import '../../../../core/constants/colors.dart';
 import '../../../../shared/article/domain/entities/article.dart';
+import '../../../../shared/widgets/app_cached_image.dart';
 
 class ArticleWidget extends StatelessWidget {
   final ArticleEntity? article;
@@ -48,51 +49,15 @@ class ArticleWidget extends StatelessWidget {
   Widget _buildImage(BuildContext context) {
     final double imageWidth = MediaQuery.of(context).size.width / 3.3;
 
-    return CachedNetworkImage(
-        imageUrl: article!.urlToImage!,
-        imageBuilder: (context, imageProvider) => Padding(
-              padding: const EdgeInsetsDirectional.only(end: 14),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.0),
-                child: Container(
-                  width: imageWidth,
-                  height: double.maxFinite,
-                  decoration: BoxDecoration(
-                    color: AppColors.inputFill,
-                    image: DecorationImage(
-                        image: imageProvider, fit: BoxFit.cover),
-                  ),
-                ),
-              ),
-            ),
-        progressIndicatorBuilder: (context, url, downloadProgress) => Padding(
-              padding: const EdgeInsetsDirectional.only(end: 14),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.0),
-                child: Container(
-                  width: imageWidth,
-                  height: double.maxFinite,
-                  decoration: BoxDecoration(
-                    color: AppColors.inputFill,
-                  ),
-                  child: CupertinoActivityIndicator(),
-                ),
-              ),
-            ),
-        errorWidget: (context, url, error) => Padding(
-              padding: const EdgeInsetsDirectional.only(end: 14),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.0),
-                child: Container(
-                  width: MediaQuery.of(context).size.width / 3,
-                  height: double.maxFinite,
-                  decoration: BoxDecoration(
-                    color: AppColors.inputFill,
-                  ),
-                  child: Icon(Icons.error),
-                ),
-              ),
-            ));
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: 14),
+      child: AppCachedImage(
+        imageUrl: article!.urlToImage ?? '',
+        width: imageWidth,
+        height: double.maxFinite,
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+    );
   }
 
   Widget _buildTitleAndDescription() {

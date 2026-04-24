@@ -6,6 +6,8 @@ import 'package:news_app_clean_architecture/core/constants/dimensions.dart';
 import 'package:news_app_clean_architecture/core/utils/date_formatter.dart';
 import 'package:news_app_clean_architecture/shared/article/domain/entities/article.dart';
 
+import '../../../../shared/widgets/app_cached_image.dart';
+
 class FeaturedArticleCard extends StatelessWidget {
   final ArticleEntity article;
   final void Function(ArticleEntity article) onArticlePressed;
@@ -38,24 +40,11 @@ class FeaturedArticleCard extends StatelessWidget {
 
   Widget _buildImage() {
     final double imageHeight = 300;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
-      child: CachedNetworkImage(
-        imageUrl: article.urlToImage ?? '',
-        height: imageHeight,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          height: imageHeight,
-          color: AppColors.inputFill,
-          child: const Center(child: CupertinoActivityIndicator()),
-        ),
-        errorWidget: (context, url, error) => Container(
-          height: imageHeight,
-          color: AppColors.inputFill,
-          child: const Icon(Icons.error),
-        ),
-      ),
+    return AppCachedImage(
+      imageUrl: article.urlToImage ?? '',
+      height: imageHeight,
+      width: double.infinity,
+      borderRadius: BorderRadius.circular(40),
     );
   }
 
