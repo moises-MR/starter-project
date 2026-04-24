@@ -4,7 +4,7 @@ import 'package:news_app_clean_architecture/features/firebase_articles/domain/pa
 abstract class FirebaseArticleRepository {
   Future<List<ArticleEntity>> getArticles();
 
-  Future<void> createArticle(CreateArticleParams params);
+  Future<ArticleEntity> createArticle(CreateArticleParams params);
 
   Future<void> deleteArticle(String articleId);
 }

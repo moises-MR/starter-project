@@ -41,9 +41,9 @@ class MockFirebaseArticleRepositoryImpl implements FirebaseArticleRepository {
   }
 
   @override
-  Future<void> createArticle(CreateArticleParams params) async {
+  Future<ArticleEntity> createArticle(CreateArticleParams params) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    _articles.add(ArticleEntity(
+    final newArticle = ArticleEntity(
       id: _articles.length + 1,
       author: params.author,
       authorId: params.authorId,
@@ -52,7 +52,9 @@ class MockFirebaseArticleRepositoryImpl implements FirebaseArticleRepository {
           'https://picsum.photos/800/400?random=${_articles.length + 1}',
       publishedAt: DateTime.now().toIso8601String(),
       content: params.content,
-    ));
+    );
+    _articles.add(newArticle);
+    return newArticle;
   }
 
   @override

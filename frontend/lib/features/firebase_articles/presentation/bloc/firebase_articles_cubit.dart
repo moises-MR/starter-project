@@ -4,6 +4,7 @@ import 'package:news_app_clean_architecture/features/firebase_articles/domain/us
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/use_cases/delete_firebase_article.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/domain/use_cases/get_firebase_articles.dart';
 import 'package:news_app_clean_architecture/features/firebase_articles/presentation/bloc/firebase_articles_state.dart';
+import '../../../../shared/article/domain/entities/article.dart';
 
 class FirebaseArticlesCubit extends Cubit<FirebaseArticlesState> {
   final GetFirebaseArticlesUseCase _getFirebaseArticlesUseCase;
@@ -27,11 +28,15 @@ class FirebaseArticlesCubit extends Cubit<FirebaseArticlesState> {
   }
 
   Future<void> createArticle(CreateArticleParams params) async {
-    emit(const FirebaseArticlesLoading());
     try {
-      await _createArticleUseCase(params: params);
-      emit(const FirebaseArticleCreated());
-      await getArticles();
+      final currentArticles = state is FirebaseArticlesDone
+          ? (state as FirebaseArticlesDone).articles
+          : <ArticleEntity>[];
+
+      final newArticle = await _createArticleUseCase(params: params);
+
+      emit(FirebaseArticleCreated());
+      emit(FirebaseArticlesDone([newArticle, ...currentArticles]));
     } catch (e) {
       emit(FirebaseArticlesError(e.toString()));
     }

@@ -23,7 +23,7 @@ class FirebaseArticleRepositoryImpl implements FirebaseArticleRepository {
   }
 
   @override
-  Future<void> createArticle(CreateArticleParams params) async {
+  Future<ArticleEntity> createArticle(CreateArticleParams params) async {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final fileName = '${timestamp}_${params.authorId}.jpg';
 
@@ -32,17 +32,22 @@ class FirebaseArticleRepositoryImpl implements FirebaseArticleRepository {
       File(params.thumbnailPath),
     );
 
+    final now = DateTime.now().toIso8601String();
+
     final model = FirebaseArticleModel(
       documentId: '',
       author: params.author,
       authorId: params.authorId,
       title: params.title,
+      description: params.description,
       urlToImage: thumbnailURL,
-      publishedAt: DateTime.now().toIso8601String(),
+      publishedAt: now,
       content: params.content,
     );
 
     await _firestoreDataSource.createArticle(model.toFirestore());
+
+    return model.toEntity();
   }
 
   @override
