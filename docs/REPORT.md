@@ -130,6 +130,10 @@ If I were continuing this project, these are the improvements I'd prioritize, or
 ## 5. Proof of the Project
 
 > Screenshots and video recordings of the final application are attached separately in the `/docs/media/` folder.
+>
+> **[🎥 Click here to watch the App Demo Video/GIF (Google Drive)](https://drive.google.com/drive/u/0/home)**
+
+### Feature Walkthrough
 
 ### Feature Walkthrough
 
