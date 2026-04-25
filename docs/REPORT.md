@@ -131,7 +131,7 @@ If I were continuing this project, these are the improvements I'd prioritize, or
 
 > Screenshots and video recordings of the final application are attached separately in the `/docs/media/` folder.
 >
-> **[🎥 Click here to watch the App Demo Video/GIF (Google Drive)](https://drive.google.com/drive/u/0/home)**
+> **[🎥 Click here to watch the App Demo Video/GIF (Google Drive)](https://drive.google.com/file/d/1K8lCeH6qE5HrhMluH2xLpalW3nhywUNG/view?usp=sharing)**
 
 ### Feature Walkthrough
 
